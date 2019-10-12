@@ -26,6 +26,7 @@ class opt_gaussian():
 		ð = X.shape[1]
 		self.Ⅱᵀ = np.ones((ń,ń))
 		ńᒾ = ń*ń
+		self.Ⲏ = np.eye(ń) - (1.0/ń)*self.Ⅱᵀ
 
 		Yₒ = OneHotEncoder(categories='auto', sparse=False).fit_transform(np.reshape(Y,(len(Y),1)))
 		self.Kᵧ = Yₒ.dot(Yₒ.T)
@@ -40,11 +41,20 @@ class opt_gaussian():
 		self.σₒ = np.median(Ð)
 		self.Ðᒾ = (-Ð*Ð)/2
 
-		self.result = minimize(self.foo, self.σₒ, method='BFGS', options={'gtol': 1e-6, 'disp': True})
+		#self.result = minimize(self.maxKseparation, self.σₒ, method='BFGS', options={'gtol': 1e-6, 'disp': True})
+		self.result = minimize(self.ℍ, self.σₒ, method='BFGS', options={'gtol': 1e-8, 'disp': True})
 
-	def foo(self, σ):
+	def maxKseparation(self, σ):
 		Kₓ = np.exp(self.Ðᒾ/(σ*σ))
 		loss = np.sum(Kₓ*self.Q)
+		return loss
+
+	def ℍ(self, σ):
+		Ⲏ = self.Ⲏ
+		Kₓ = np.exp(self.Ðᒾ/(σ*σ))
+		Kᵧ = self.Kᵧ
+
+		loss = -np.sum((Kₓ.dot(Ⲏ))*(Kᵧ.dot(Ⲏ)))
 		return loss
 
 
@@ -65,10 +75,10 @@ class opt_gaussian():
 			ƌᵦ.append(ḡ*np.sum(Kₓ*(Ⅱᵀ - Kᵧ)))
 
 			Δƌ = np.array(ƌₐ) - np.array(ƌᵦ)
-			lossⲷ.append(self.foo(σ))
+			lossⲷ.append(self.maxKseparation(σ))
 	
-		loss = self.foo(self.result.x)
-		lossₒ = self.foo(self.σₒ)
+		loss = self.maxKseparation(self.result.x)
+		lossₒ = self.maxKseparation(self.σₒ)
 
 		print('σₒ = %.3f'%self.σₒ)
 		print('σ = %.3f'%self.result.x)
@@ -104,5 +114,16 @@ if __name__ == "__main__":
 	X_test = preprocessing.scale(X_test)
 
 	opt_σ = opt_gaussian(X,Y, data_name)	#q if not set, it is automatically set to 80% of data variance by PCA
-	opt_σ.debug()
+
+	print(opt_σ.maxKseparation(3.028))
+	print(opt_σ.maxKseparation(3.039))
+
+	print('\n\n')
+
+	print(opt_σ.ℍ(3.028))
+	print(opt_σ.ℍ(3.039))
+
+
+	#print(opt_σ.result.x)
+	#opt_σ.debug()
 
