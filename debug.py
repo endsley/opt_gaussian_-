@@ -50,10 +50,7 @@ def maxKseparation_debug(obj):
 
 def ℍ_debug(obj):
 	Kᵧ = obj.Kᵧ
-	Q = obj.Q
-	ɡ = obj.ɡ
-	ḡ = obj.ḡ
-	Ⲏ = obj.Ⲏ
+	Γ = obj.Γ
 	Ⅱᵀ = obj.Ⅱᵀ
 	ƌₐ = []
 	ƌᵦ = []
@@ -61,12 +58,9 @@ def ℍ_debug(obj):
 	σⲷ = np.arange(0.01,7, 0.01)
 
 	for σ in σⲷ:
-
-		Kₓ = np.exp(obj.Ðᒾ/(σ*σ))
-		Ƙ = (Kₓ.dot(Ⲏ))*(Kᵧ.dot(Ⲏ))
-
-		ƌₐ.append(np.sum(Ƙ*Kᵧ))
-		ƌᵦ.append(np.sum(Ƙ*(Ⅱᵀ - Kᵧ)))
+		#Kₓ = np.exp(obj.Ðᒾ/(σ*σ))
+		#ƌₐ.append(np.sum(Kₓ*Kᵧ))
+		#ƌᵦ.append(np.sum(Kₓ*(Ⅱᵀ - Kᵧ)))
 
 		lossⲷ.append(-obj.ℍ(σ))
 
@@ -80,17 +74,17 @@ def ℍ_debug(obj):
 	print('lossₒ = %.3f'%lossₒ)
 	print('loss = %.3f'%loss)
 
-	optσText = 'Optimal σ : %.3f\nopt kernel separation : %.3f'%(obj.result.x, -loss)
+	optσText = 'Optimal σ : %.3f\nMax HSIC : %.3f'%(obj.result.x, -loss)
 
-	plt.plot(σⲷ, ƌₐ, 'r-')
-	plt.plot(σⲷ, ƌᵦ, 'b-')
+	#plt.plot(σⲷ, ƌₐ, 'r-')
+	#plt.plot(σⲷ, ƌᵦ, 'b-')
 	#plt.plot(σⲷ, Δƌ, 'g-')
 	plt.plot(σⲷ, lossⲷ, 'y-')
 	plt.xlabel('σ value')
 	plt.ylabel('HSIC Value')
 	plt.title('HSIC as Varying σ')
-	plt.text(σⲷ[-1], ƌₐ[-1], 'Mean within cluster kernel value', horizontalalignment='right')
-	plt.text(σⲷ[-1], ƌᵦ[-1], 'Mean between cluster kernel value', horizontalalignment='right')
+	#plt.text(σⲷ[-1], ƌₐ[-1], 'Mean within cluster kernel value', horizontalalignment='right')
+	#plt.text(σⲷ[-1], ƌᵦ[-1], 'Mean between cluster kernel value', horizontalalignment='right')
 	plt.text(obj.result.x, -loss, optσText, horizontalalignment='center', va='top')
 	plt.axvline(x=obj.result.x, linestyle="dashed")
 

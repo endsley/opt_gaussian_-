@@ -21,28 +21,31 @@ np.set_printoptions(suppress=True)
 
 
 class opt_gaussian():
-	def __init__(self, X, Y, data_name=''):	#	X=data, Y=label, q=reduced dimension
+	def __init__(self, X, Y, σ_type='ℍ'):	#	X=data, Y=label, σ_type='ℍ', or 'maxKseparation'
 		ń = X.shape[0]
 		ð = X.shape[1]
 		self.Ⅱᵀ = np.ones((ń,ń))
 		ńᒾ = ń*ń
-		self.Ⲏ = np.eye(ń) - (1.0/ń)*self.Ⅱᵀ
-
 		Yₒ = OneHotEncoder(categories='auto', sparse=False).fit_transform(np.reshape(Y,(len(Y),1)))
-		self.Kᵧ = Yₒ.dot(Yₒ.T)
-		ṉ = np.sum(self.Kᵧ)
-
-		self.ɡ = ɡ = 1.0/ṉ
-		self.ḡ = ḡ = 1.0/(ńᒾ - ṉ)
-
-		self.Q = ḡ*self.Ⅱᵀ - (ɡ + ḡ)*self.Kᵧ
+		self.Kᵧ = Kᵧ = Yₒ.dot(Yₒ.T)
+		ṉ = np.sum(Kᵧ)
+		self.σ_type = σ_type
 
 		Ð = sklearn.metrics.pairwise.pairwise_distances(X)
 		self.σₒ = np.median(Ð)
 		self.Ðᒾ = (-Ð*Ð)/2
 
-		#self.result = minimize(self.maxKseparation, self.σₒ, method='BFGS', options={'gtol': 1e-6, 'disp': True})
-		self.result = minimize(self.ℍ, self.σₒ, method='BFGS', options={'gtol': 1e-8, 'disp': True})
+		if σ_type == 'ℍ':
+			Ⲏ = np.eye(ń) - (1.0/ń)*self.Ⅱᵀ
+			self.Γ = Ⲏ.dot(Kᵧ).dot(Ⲏ)
+			self.result = minimize(self.ℍ, self.σₒ, method='BFGS', options={'gtol': 1e-8, 'disp': True})
+		else:
+			self.ɡ = ɡ = 1.0/ṉ
+			self.ḡ = ḡ = 1.0/(ńᒾ - ṉ)
+	
+			self.Q = ḡ*self.Ⅱᵀ - (ɡ + ḡ)*Kᵧ
+			self.result = minimize(self.maxKseparation, self.σₒ, method='BFGS', options={'gtol': 1e-6, 'disp': True})
+
 
 	def maxKseparation(self, σ):
 		Kₓ = np.exp(self.Ðᒾ/(σ*σ))
@@ -50,13 +53,18 @@ class opt_gaussian():
 		return loss
 
 	def ℍ(self, σ):
-		Ⲏ = self.Ⲏ
 		Kₓ = np.exp(self.Ðᒾ/(σ*σ))
 		Kᵧ = self.Kᵧ
+		Γ = self.Γ
 
-		loss = -np.sum((Kₓ.dot(Ⲏ))*(Kᵧ.dot(Ⲏ)))
+		loss = -np.sum(Kₓ*Γ)
 		return loss
 
+	def debug(self):
+		if self.σ_type == 'ℍ':
+			ℍ_debug(self)
+		else:
+			maxKseparation_debug(self)
 
 if __name__ == "__main__":
 	data_name = 'wine_2'
@@ -68,18 +76,7 @@ if __name__ == "__main__":
 	X = preprocessing.scale(X)
 	X_test = preprocessing.scale(X_test)
 
-	opt_σ = opt_gaussian(X,Y, data_name)	#q if not set, it is automatically set to 80% of data variance by PCA
-	#maxKseparation_debug(opt_σ)
-	ℍ_debug(opt_σ)
+	opt_σ = opt_gaussian(X,Y, σ_type='ℍ')	#σ_type='ℍ' or 'maxKseparation'
 
-	#print(opt_σ.maxKseparation(3.028))
-	#print(opt_σ.maxKseparation(3.039))
-
-	#print('\n\n')
-
-	#print(opt_σ.ℍ(3.028))
-	#print(opt_σ.ℍ(3.039))
-
-
-	#print(opt_σ.result.x)
+	opt_σ.debug()
 
