@@ -66,6 +66,13 @@ class opt_gaussian():
 		else:
 			maxKseparation_debug(self)
 
+
+def get_opt_σ(X,Y):
+	optimizer = opt_gaussian(X,Y)	
+	return optimizer.result.x
+
+
+
 if __name__ == "__main__":
 	data_name = 'wine_2'
 	X = np.loadtxt('data/' + data_name + '.csv', delimiter=',', dtype=np.float64)			
