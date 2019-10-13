@@ -10,8 +10,8 @@ import socket
 import sklearn.metrics
 from scipy.optimize import minimize
 from sklearn import preprocessing
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import OneHotEncoder
+from debug import *
 
 np.set_printoptions(precision=4)
 np.set_printoptions(threshold=sys.maxsize)
@@ -58,51 +58,6 @@ class opt_gaussian():
 		return loss
 
 
-	def debug(self):
-		Kᵧ = self.Kᵧ
-		Q = self.Q
-		ɡ = self.ɡ
-		ḡ = self.ḡ
-		Ⅱᵀ = self.Ⅱᵀ
-		ƌₐ = []
-		ƌᵦ = []
-		lossⲷ = []
-		σⲷ = np.arange(0.01,7, 0.01)
-
-		for σ in σⲷ:
-			Kₓ = np.exp(self.Ðᒾ/(σ*σ))
-			ƌₐ.append(ɡ*np.sum(Kₓ*Kᵧ))
-			ƌᵦ.append(ḡ*np.sum(Kₓ*(Ⅱᵀ - Kᵧ)))
-
-			Δƌ = np.array(ƌₐ) - np.array(ƌᵦ)
-			lossⲷ.append(self.maxKseparation(σ))
-	
-		loss = self.maxKseparation(self.result.x)
-		lossₒ = self.maxKseparation(self.σₒ)
-
-		print('σₒ = %.3f'%self.σₒ)
-		print('σ = %.3f'%self.result.x)
-		print('lossₒ = %.3f'%lossₒ)
-		print('loss = %.3f'%loss)
-
-		optσText = 'Optimal σ : %.3f\nopt kernel separation : %.3f'%(self.result.x, -loss)
-
-		plt.plot(σⲷ, ƌₐ, 'r-')
-		plt.plot(σⲷ, ƌᵦ, 'b-')
-		plt.plot(σⲷ, Δƌ, 'g-')
-		#plt.plot(σⲷ, lossⲷ, 'y-')
-		plt.xlabel('σ value')
-		plt.ylabel('Kernel Value')
-		plt.title('Kernel Value as Varying σ')
-		plt.text(σⲷ[-1], ƌₐ[-1], 'Mean within cluster kernel value', horizontalalignment='right')
-		plt.text(σⲷ[-1], ƌᵦ[-1], 'Mean between cluster kernel value', horizontalalignment='right')
-		plt.text(self.result.x, -loss, optσText, horizontalalignment='center')
-		plt.axvline(x=self.result.x, linestyle="dashed")
-
-		#plt.text(σⲷ[-1], Δƌ[-1], 'Kernel Value Δ', horizontalalignment='right')
-
-		plt.show()
-
 if __name__ == "__main__":
 	data_name = 'wine_2'
 	X = np.loadtxt('data/' + data_name + '.csv', delimiter=',', dtype=np.float64)			
@@ -114,16 +69,17 @@ if __name__ == "__main__":
 	X_test = preprocessing.scale(X_test)
 
 	opt_σ = opt_gaussian(X,Y, data_name)	#q if not set, it is automatically set to 80% of data variance by PCA
+	#maxKseparation_debug(opt_σ)
+	ℍ_debug(opt_σ)
 
-	print(opt_σ.maxKseparation(3.028))
-	print(opt_σ.maxKseparation(3.039))
+	#print(opt_σ.maxKseparation(3.028))
+	#print(opt_σ.maxKseparation(3.039))
 
-	print('\n\n')
+	#print('\n\n')
 
-	print(opt_σ.ℍ(3.028))
-	print(opt_σ.ℍ(3.039))
+	#print(opt_σ.ℍ(3.028))
+	#print(opt_σ.ℍ(3.039))
 
 
 	#print(opt_σ.result.x)
-	#opt_σ.debug()
 
