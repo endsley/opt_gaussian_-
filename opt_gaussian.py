@@ -11,7 +11,9 @@ import sklearn.metrics
 from scipy.optimize import minimize
 from sklearn import preprocessing
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.utils.random import sample_without_replacement
 from debug import *
+import time 
 
 np.set_printoptions(precision=4)
 np.set_printoptions(threshold=sys.maxsize)
@@ -24,6 +26,15 @@ class opt_gaussian():
 	def __init__(self, X, Y, σ_type='ℍ'):	#	X=data, Y=label, σ_type='ℍ', or 'maxKseparation'
 		ń = X.shape[0]
 		ð = X.shape[1]
+
+		if ń > 200:
+			#	Down sample first
+			samples = sample_without_replacement(n_population=ń, n_samples=200)
+			X = X[samples,:]
+			Y = Y[samples]
+			ń = X.shape[0]
+
+
 		self.Ⅱᵀ = np.ones((ń,ń))
 		ńᒾ = ń*ń
 		Yₒ = OneHotEncoder(categories='auto', sparse=False).fit_transform(np.reshape(Y,(len(Y),1)))
@@ -60,6 +71,9 @@ class opt_gaussian():
 		loss = -np.sum(Kₓ*Γ)
 		return loss
 
+
+
+
 	def debug(self):
 		if self.σ_type == 'ℍ':
 			ℍ_debug(self)
@@ -74,7 +88,7 @@ def get_opt_σ(X,Y):
 
 
 if __name__ == "__main__":
-	data_name = 'wine_2'
+	data_name = 'car'
 	X = np.loadtxt('data/' + data_name + '.csv', delimiter=',', dtype=np.float64)			
 	Y = np.loadtxt('data/' + data_name + '_label.csv', delimiter=',', dtype=np.int32)			
 	X_test = np.loadtxt('data/' + data_name + '_test.csv', delimiter=',', dtype=np.float64)			
@@ -83,7 +97,9 @@ if __name__ == "__main__":
 	X = preprocessing.scale(X)
 	X_test = preprocessing.scale(X_test)
 
+	start_time = time.time() 
 	opt_σ = opt_gaussian(X,Y, σ_type='ℍ')	#σ_type='ℍ' or 'maxKseparation'
+	print("--- %s seconds ---" % (time.time() - start_time))
 
 	opt_σ.debug()
 
